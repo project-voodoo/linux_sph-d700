@@ -40,6 +40,9 @@
 #include <linux/proc_fs.h>
 #include <mach/sec_jack.h>
 #include <linux/param.h>
+#ifdef CONFIG_SND_VOODOO
+#include "wm8994_voodoo.h"
+#endif
 
 #define TTY_DIR_NAME "sound_tty"
 #define POP_NOISE_DELETE_DELAY_TIME get_jiffies_64() + (1 * HZ)    // 10s
@@ -203,6 +206,11 @@ int wm8994_write(struct snd_soc_codec *codec, unsigned int reg, unsigned int val
 	 *   D15..D9 WM8993 register offset
 	 *   D8...D0 register data
 	 */
+
+#ifdef CONFIG_SND_VOODOO
+	value = voodoo_hook_wm8994_write(codec, reg, value);
+#endif
+
 	data[0] = (reg & 0xff00 ) >> 8;
 	data[1] = reg & 0x00ff;
 	data[2] = value >> 8;
@@ -1135,6 +1143,7 @@ static const struct snd_soc_dapm_widget wm8994_dapm_widgets[] = {
 
 //SND_SOC_DAPM_ADC("ADC", "Capture", WM8580_PWRDN1, 1, 1),
 
+
 //SND_SOC_DAPM_INPUT("AINL"),
 //SND_SOC_DAPM_INPUT("AINR"),
 };
@@ -1379,6 +1388,7 @@ static int wm8994_set_bias_level(struct snd_soc_codec *codec,
 
 			/* Switch to normal bias */
 			snd_soc_update_bits(codec, WM8994_ANTIPOP_2,
+
 					    WM8994_BIAS_SRC |
 					    WM8994_STARTUP_BIAS_ENA, 0);
 		}
@@ -2286,6 +2296,10 @@ static int wm8994_pcm_probe(struct platform_device *pdev)
         }
 #else
                 /* Add other interfaces here */
+#endif
+
+#ifdef CONFIG_SND_VOODOO
+	voodoo_hook_wm8994_pcm_probe(codec);
 #endif
         return ret;
 }

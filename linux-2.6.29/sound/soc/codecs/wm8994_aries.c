@@ -20,6 +20,9 @@
 #include <plat/regs-clock.h>
 #include <mach/gpio-jupiter.h>
 #include "wm8994.h"
+#ifdef CONFIG_SND_VOODOO
+#include "wm8994_voodoo.h"
+#endif
 
 //------------------------------------------------
 //		Debug Feature
@@ -1190,6 +1193,10 @@ struct wm8994_priv *wm8994 = codec->private_data;
 		wm8994_write( codec, 0x450, 0x1BA); 
 		/****************DRC END************************/
 	}
+
+#ifdef CONFIG_SND_VOODOO_RECORD_PRESETS
+	voodoo_hook_record_main_mic();
+#endif
 }
 
 void wm8994_record_bluetooth(struct snd_soc_codec *codec)
